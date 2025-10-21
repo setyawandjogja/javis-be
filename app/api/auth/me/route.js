@@ -1,11 +1,44 @@
-import cookie from 'cookie';
-import { verifyJwt } from '@/lib/jwt';
+import { cookies } from "next/headers";
+import { verifyJwt } from "@/lib/jwt";
 
-export default async function handler(req, res) {
-  const cookies = req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
-  const token = cookies.token;
-  if (!token) return res.status(401).json({ error: 'no token' });
-  const payload = verifyJwt(token);
-  if (!payload) return res.status(401).json({ error: 'invalid token' });
-  return res.json({ ok: true, user: { id: payload.sub, email: payload.email, name: payload.name } });
+export async function GET() {
+  try {
+    // ✅ Ambil cookie dengan cara aman
+    const cookieStore = cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
+      return new Response(JSON.stringify({ error: "No token" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // ✅ Verifikasi JWT
+    const payload = verifyJwt(token);
+    if (!payload) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // ✅ BERHASIL
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        user: { id: payload.sub, email: payload.email, name: payload.name },
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    console.error("ERROR /api/auth/me:", error);
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }

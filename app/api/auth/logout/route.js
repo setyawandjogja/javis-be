@@ -4,7 +4,7 @@ export async function POST() {
   try {
     const clearCookie = serialize('token', '', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'local',
       sameSite: 'lax',
       path: '/',
       maxAge: 0,
