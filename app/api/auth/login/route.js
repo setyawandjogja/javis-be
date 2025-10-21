@@ -1,3 +1,4 @@
+// app/api/auth/login/route.js
 import { query } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { signJwt } from "@/lib/jwt";
@@ -6,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const loginAttempts = new Map();
 const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 60 * 1000;
+const WINDOW_MS = 60 * 1000; // 1 menit
 
 function rateLimit(ip) {
   const now = Date.now();
@@ -24,8 +25,12 @@ function rateLimit(ip) {
 }
 
 function corsHeaders() {
+  const origin = process.env.NODE_ENV === "production"
+    ? "https://your-production-domain.com"
+    : "http://localhost:5173";
+
   return {
-    "Access-Control-Allow-Origin": "http://localhost:5173",
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Credentials": "true",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie, Accept",
@@ -48,17 +53,16 @@ export async function POST(req) {
 
     const { email, password } = await req.json();
     if (!email || !password) {
-      return new Response(JSON.stringify({ error: "Email and password required" }), {
-        status: 400,
-        headers: corsHeaders(),
-      });
+      return new Response(
+        JSON.stringify({ error: "Email and password required" }),
+        { status: 400, headers: corsHeaders() }
+      );
     }
 
-  const rows = await query(
-  'SELECT id, email, password_hash, name FROM "javis".users WHERE email = $1',
-  [email]
-);
-
+    const rows = await query(
+      'SELECT id, email, password_hash, name FROM "javis".users WHERE email = $1',
+      [email]
+    );
 
     if (!rows.length) {
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
@@ -78,6 +82,10 @@ export async function POST(req) {
 
     loginAttempts.delete(ip);
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined");
+    }
+
     const token = signJwt({
       sub: user.id,
       email: user.email,
@@ -88,10 +96,10 @@ export async function POST(req) {
     const cookieStore = await cookies();
     cookieStore.set("token", token, {
       httpOnly: true,
-      secure: false, // must false for localhost
+      secure: process.env.NODE_ENV === "production", // secure di production
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60,
+      maxAge: 60 * 60, // 1 jam
     });
 
     return new Response(JSON.stringify({ ok: true, token }), {
