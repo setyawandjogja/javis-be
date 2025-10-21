@@ -48,32 +48,32 @@ export async function POST(req) {
 
     const { email, password } = await req.json();
     if (!email || !password) {
-      return new Response(
-        JSON.stringify({ error: "Email and password required" }),
-        { status: 400, headers: corsHeaders() }
-      );
+      return new Response(JSON.stringify({ error: "Email and password required" }), {
+        status: 400,
+        headers: corsHeaders(),
+      });
     }
 
-    // ✅ PostgreSQL query dengan schema "user"
-    const rows = await query(
-      'SELECT id, email, password_hash, name FROM "javis".users WHERE email = $1',
-      [email]
-    );
+  const rows = await query(
+  'SELECT id, email, password_hash, name FROM "javis".users WHERE email = $1',
+  [email]
+);
+
 
     if (!rows.length) {
-      return new Response(
-        JSON.stringify({ error: "Invalid credentials" }),
-        { status: 401, headers: corsHeaders() }
-      );
+      return new Response(JSON.stringify({ error: "Invalid credentials" }), {
+        status: 401,
+        headers: corsHeaders(),
+      });
     }
 
     const user = rows[0];
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
-      return new Response(
-        JSON.stringify({ error: "Invalid credentials" }),
-        { status: 401, headers: corsHeaders() }
-      );
+      return new Response(JSON.stringify({ error: "Invalid credentials" }), {
+        status: 401,
+        headers: corsHeaders(),
+      });
     }
 
     loginAttempts.delete(ip);
@@ -100,10 +100,10 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: corsHeaders() }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: corsHeaders(),
+    });
   }
 }
 
