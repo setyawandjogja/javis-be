@@ -51,7 +51,7 @@ Backend untuk TailAdmin menggunakan **Next.js API Routes**, mengelola autentikas
 ---
 ## Struktur Proyek
 
-1. ****
+****
 ```bash
 app/
 └─ api/
@@ -63,13 +63,13 @@ lib/
 ├─ db.js # PostgreSQL connection
 └─ jwt.js # JWT helpers
 .env.local # environment variables
-
+```
 
 ---
 
 ## Setup
 
-1. **Install dependencies**
+ **Install dependencies**
 ```bash
 npm install
 
@@ -85,15 +85,22 @@ JWT_EXPIRES_IN=1h
 
 NODE_ENV=development
 
-# Optional Supabase
-DATABASE_URL=postgresql://postgres:<password>@<host>:5432/postgres
+SELECT datname FROM pg_database WHERE datistemplate = false;
 
-CREATE SCHEMA IF NOT EXISTS "user";
 
-CREATE TABLE "user".users (
+CREATE TABLE "javis".users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(255),
   created_at TIMESTAMP DEFAULT now()
 );
+
+
+
+INSERT INTO javis.users (email, password_hash, name)
+VALUES ('test@example.com', '$2a$12$nnrpmLf2Fkdw.U9M8S272uj2s.QV9lqPId6sZsIloahmu0bEi7xnS', 'Test User');
+
+
+
+```
