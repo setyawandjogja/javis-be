@@ -48,8 +48,11 @@ Backend untuk TailAdmin menggunakan **Next.js API Routes**, mengelola autentikas
 - **Hashing Password:** bcryptjs
 - **UUID:** uuid (untuk JWT jti)
 
+---
 ## Struktur Proyek
 
+1. ****
+```bash
 app/
 └─ api/
 └─ auth/
