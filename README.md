@@ -4,6 +4,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 First, run the development server:
 
+
+
 ```bash
 npm run dev
 # or
@@ -34,3 +36,61 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deskripsi
+Backend untuk TailAdmin menggunakan **Next.js API Routes**, mengelola autentikasi, JWT, dan koneksi ke PostgreSQL.
+
+---
+
+## Tech Stack
+- **Backend:** Next.js API Routes (Node.js)
+- **Database:** PostgreSQL (schema `javis`)  
+- **Authentication:** JWT (JSON Web Token)
+- **Hashing Password:** bcryptjs
+- **UUID:** uuid (untuk JWT jti)
+
+## Struktur Proyek
+
+app/
+└─ api/
+└─ auth/
+├─ login/route.js
+├─ logout/route.js
+└─ me/route.js
+lib/
+├─ db.js # PostgreSQL connection
+└─ jwt.js # JWT helpers
+.env.local # environment variables
+
+
+---
+
+## Setup
+
+1. **Install dependencies**
+```bash
+npm install
+
+
+PG_HOST=localhost
+PG_PORT=5432
+PG_USER=postgres
+PG_PASSWORD=12345
+PG_DATABASE=javis
+
+JWT_SECRET=de930518ffa5405a8ee158e8270ec396
+JWT_EXPIRES_IN=1h
+
+NODE_ENV=development
+
+# Optional Supabase
+DATABASE_URL=postgresql://postgres:<password>@<host>:5432/postgres
+
+CREATE SCHEMA IF NOT EXISTS "user";
+
+CREATE TABLE "user".users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  name VARCHAR(255),
+  created_at TIMESTAMP DEFAULT now()
+);
