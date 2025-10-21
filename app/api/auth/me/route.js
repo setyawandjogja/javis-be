@@ -3,8 +3,7 @@ import { verifyJwt } from "@/lib/jwt";
 
 export async function GET() {
   try {
-    // ✅ Ambil cookie dengan cara aman
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
     if (!token) {
@@ -14,7 +13,6 @@ export async function GET() {
       });
     }
 
-    // ✅ Verifikasi JWT
     const payload = verifyJwt(token);
     if (!payload) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
@@ -23,16 +21,12 @@ export async function GET() {
       });
     }
 
-    // ✅ BERHASIL
     return new Response(
       JSON.stringify({
         ok: true,
         user: { id: payload.sub, email: payload.email, name: payload.name },
       }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("ERROR /api/auth/me:", error);

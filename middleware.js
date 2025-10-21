@@ -6,36 +6,19 @@ export function middleware(req) {
   const origin = req.headers.get("origin");
   const isAllowedOrigin = origin === allowedOrigin;
 
-  // ✅ Handle Preflight (OPTIONS)
   if (req.method === "OPTIONS") {
     const response = new NextResponse(null, { status: 204 });
-
-    if (isAllowedOrigin) {
-      response.headers.set("Access-Control-Allow-Origin", allowedOrigin);
-    }
-
+    if (isAllowedOrigin) response.headers.set("Access-Control-Allow-Origin", allowedOrigin);
     response.headers.set("Access-Control-Allow-Credentials", "true");
-    response.headers.set(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS"
-    );
-    response.headers.set(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, Cookie, Accept"
-    );
-
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie, Accept");
     return response;
   }
 
-  // ✅ Untuk request normal (GET/POST)
   const res = NextResponse.next();
-  if (isAllowedOrigin) {
-    res.headers.set("Access-Control-Allow-Origin", allowedOrigin);
-  }
+  if (isAllowedOrigin) res.headers.set("Access-Control-Allow-Origin", allowedOrigin);
   res.headers.set("Access-Control-Allow-Credentials", "true");
   return res;
 }
 
-export const config = {
-  matcher: "/api/:path*",
-};
+export const config = { matcher: "/api/:path*" };

@@ -1,44 +1,19 @@
-import { serialize } from 'cookie';
+import { cookies } from "next/headers";
 
 export async function POST() {
   try {
-    const clearCookie = serialize('token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'local',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 0,
-    });
+    const cookieStore = await cookies();
+    cookieStore.delete("token", { path: "/" });
 
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
-      headers: {
-        ...corsHeaders(),
-        'Set-Cookie': clearCookie,
-        'Content-Type': 'application/json',
-      },
+      headers: { "Content-Type": "application/json" },
     });
-  } catch (err) {
-    console.error('Logout error:', err);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+  } catch (error) {
+    console.error("LOGOUT ERROR:", error);
+    return new Response(JSON.stringify({ error: "Server error" }), {
       status: 500,
-      headers: corsHeaders(),
+      headers: { "Content-Type": "application/json" },
     });
   }
-}
-
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: corsHeaders(),
-  });
-}
-
-function corsHeaders() {
-  return {
-    'Access-Control-Allow-Origin': 'http://localhost:5173',
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Credentials': 'true',
-  };
 }
