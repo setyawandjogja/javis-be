@@ -73,18 +73,22 @@ lib/
 ```bash
 npm install
 
-
+#env.local
+# PostgreSQL lokal
 PG_HOST=localhost
 PG_PORT=5432
 PG_USER=postgres
 PG_PASSWORD=12345
-PG_DATABASE=javis
+PG_DATABASE=postgres
 
+# JWT
 JWT_SECRET=de930518ffa5405a8ee158e8270ec396
 JWT_EXPIRES_IN=1h
 
+# Environment
 NODE_ENV=development
 
+#DATABASE
 SELECT datname FROM pg_database WHERE datistemplate = false;
 
 
