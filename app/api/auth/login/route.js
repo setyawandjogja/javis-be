@@ -24,10 +24,15 @@ function rateLimit(ip) {
   return attempts.count <= MAX_ATTEMPTS;
 }
 
-function corsHeaders() {
-  const origin = process.env.NODE_ENV === "production"
-    ? "https://your-production-domain.com"
-    : "http://localhost:5173";
+// ✅ AUTO DETECT ORIGIN SAAT DEPLOY DI VERCEL
+function corsHeaders(req) {
+  const host = req.headers.get("host");
+  // Jika produksi: host dari vercel / domain kita
+  // Jika lokal: pakai localhost:5173 frontend Vite
+  const origin =
+    process.env.NODE_ENV === "production"
+      ? `https://${host}`
+      : "http://localhost:3000";
 
   return {
     "Access-Control-Allow-Origin": origin,
@@ -47,7 +52,7 @@ export async function POST(req) {
     if (!rateLimit(ip)) {
       return new Response(
         JSON.stringify({ error: "Too many login attempts. Try again later." }),
-        { status: 429, headers: corsHeaders() }
+        { status: 429, headers: corsHeaders(req) }
       );
     }
 
@@ -55,10 +60,11 @@ export async function POST(req) {
     if (!email || !password) {
       return new Response(
         JSON.stringify({ error: "Email and password required" }),
-        { status: 400, headers: corsHeaders() }
+        { status: 400, headers: corsHeaders(req) }
       );
     }
 
+    // 🔥 Query ke database
     const rows = await query(
       'SELECT id, email, password_hash, name FROM "javis".users WHERE email = $1',
       [email]
@@ -67,7 +73,7 @@ export async function POST(req) {
     if (!rows.length) {
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
         status: 401,
-        headers: corsHeaders(),
+        headers: corsHeaders(req),
       });
     }
 
@@ -76,7 +82,7 @@ export async function POST(req) {
     if (!valid) {
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
         status: 401,
-        headers: corsHeaders(),
+        headers: corsHeaders(req),
       });
     }
 
@@ -96,25 +102,25 @@ export async function POST(req) {
     const cookieStore = await cookies();
     cookieStore.set("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // secure di production
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60, // 1 jam
+      maxAge: 60 * 60,
     });
 
     return new Response(JSON.stringify({ ok: true, token }), {
       status: 200,
-      headers: { ...corsHeaders(), "Content-Type": "application/json" },
+      headers: { ...corsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
-      headers: corsHeaders(),
+      headers: corsHeaders(req),
     });
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: corsHeaders() });
+export async function OPTIONS(req) {
+  return new Response(null, { status: 204, headers: corsHeaders(req) });
 }
